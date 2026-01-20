@@ -33,7 +33,6 @@ from preprocessing import preprocess_text
 
 st.set_page_config(
     page_title="Advanced AI Text Analyzer",
-    page_icon="🧠",
     layout="wide"
 )
 
@@ -108,7 +107,7 @@ textarea {
 
 
 st.markdown("<div class='main-card'>", unsafe_allow_html=True)
-st.title("🧠 NarrativeNexus: The Dynamic Text Analysis Platform")
+st.title("NarrativeNexus: The Dynamic Text Analysis Platform")
 st.write("Analyze documents and text using **AI-powered NLP techniques** 🚀")
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -137,7 +136,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<div class='section-title'>📂 Upload File</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'> Upload File</div>", unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader(
     "Supported formats: PDF, Word, Excel, TXT, CSV",
@@ -161,12 +160,12 @@ if uploaded_file:
             raw_text = uploaded_file.read().decode("utf-8")
         
 
-    st.success("✅ File processed successfully!")
+    st.success(" File processed successfully!")
 st.markdown("</div>", unsafe_allow_html=True)
 
 
 st.markdown("<div class='main-card'>", unsafe_allow_html=True)
-st.markdown("<div class='section-title'>📝 Text Input</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'> Text Input</div>", unsafe_allow_html=True)
 
 user_input = st.text_area(
     "Paste or edit your text here",
@@ -174,14 +173,14 @@ user_input = st.text_area(
     height=260
 )
 
-analyze_btn = st.button("🚀 Analyze Text", use_container_width=True)
+analyze_btn = st.button(" Analyze Text", use_container_width=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 
 if analyze_btn:
 
     if not user_input.strip():
-        st.warning("⚠️ Please enter text first.")
+        st.warning(" Please enter text first.")
         st.stop()
 
     processed_text = preprocess_text(
@@ -194,14 +193,14 @@ if analyze_btn:
     )
 
     st.markdown("<div class='main-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>🔍 Processed Text</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'> Processed Text</div>", unsafe_allow_html=True)
     st.text_area("Processed Output", processed_text, height=160)
     st.markdown("</div>", unsafe_allow_html=True)
 
 
     char_c, word_c, line_c, sent_c = analyze_text_stats(user_input)
 
-    st.markdown("<div class='section-title'>📊 Text Statistics</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'> Text Statistics</div>", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
@@ -215,19 +214,19 @@ if analyze_btn:
 
 
     st.markdown("<div class='main-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>😊 Sentiment Analysis</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'> Sentiment Analysis</div>", unsafe_allow_html=True)
     polarity, sentiment = analyze_sentiment(processed_text)
     st.success(f"Sentiment: **{sentiment}** | Polarity: **{round(polarity, 3)}**")
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div class='main-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>🧩 Topic Modeling</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'> Topic Modeling</div>", unsafe_allow_html=True)
     for topic in topic_modeling(processed_text):
         st.write(f"🔹 **{topic[0]}:** {topic[1]}")
     st.markdown("</div>", unsafe_allow_html=True)
 
     # st.markdown("<div class='main-card'>", unsafe_allow_html=True)
-    # st.markdown("<div class='section-title'>📝 Summary</div>", unsafe_allow_html=True)
+    # st.markdown("<div class='section-title'> Summary</div>", unsafe_allow_html=True)
     # # summary_text = preprocess_for_summary(raw_text)
     # if apply_lemma:
     #  summary_text = preprocess_for_summary_lemmatized(raw_text)
@@ -237,7 +236,7 @@ if analyze_btn:
 
 
     st.markdown("<div class='main-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>📊 Keyword Dashboard</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'> Keyword Dashboard</div>", unsafe_allow_html=True)
 
     keywords = get_top_keywords(processed_text, top_n=10)
 
@@ -271,7 +270,7 @@ if analyze_btn:
 
 
     st.markdown("<div class='main-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>📝 Summary</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'> Summary</div>", unsafe_allow_html=True)
     # summary_text = preprocess_for_summary(raw_text)
     if apply_lemma:
      summary_text = preprocess_for_summary_lemmatized(raw_text)
@@ -301,12 +300,12 @@ if analyze_btn:
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div class='main-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>☁️ Word Cloud</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'> Word Cloud</div>", unsafe_allow_html=True)
     st.pyplot(generate_wordcloud(processed_text), use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 
-if st.button("🧹 Clear All", use_container_width=True):
+if st.button(" Clear All", use_container_width=True):
     st.rerun()
 
 
