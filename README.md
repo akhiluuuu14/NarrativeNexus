@@ -1,10 +1,10 @@
-# 🧠 Dynamic AI Text Analysis Platform
+Dynamic Text Analysis Platform
 
 A powerful Streamlit-based web application that performs intelligent text analysis using Natural Language Processing (NLP) techniques. This platform allows users to analyze raw text or uploaded documents and instantly get insights such as summaries, sentiment, keywords, topics, and visualizations like word clouds.
 
 ---
 
-## 🚀 Features
+Features
 
 - 📄 Input via:
   - Manual text input
@@ -19,7 +19,7 @@ A powerful Streamlit-based web application that performs intelligent text analys
 
 ---
 
-## 🛠️ Tech Stack
+ Tech Stack
 
 - **Frontend & UI:** Streamlit  
 - **Backend:** Python  
