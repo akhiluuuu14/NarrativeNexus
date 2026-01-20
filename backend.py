@@ -1,128 +1,106 @@
-
 import PyPDF2
-import openpyxl
+import pandas as pd
 from docx import Document
 from textblob import TextBlob
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.decomposition import LatentDirichletAllocation, NMF
+from sklearn.decomposition import LatentDirichletAllocation
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
-import pandas as pd
-
-
-
+# ---------------- FILE READERS ---------------- #
 def read_pdf(file):
-    text = ""
     try:
         reader = PyPDF2.PdfReader(file)
-        for page in reader.pages:
-            text += page.extract_text()
+        return " ".join([page.extract_text() or "" for page in reader.pages])
     except:
-        return ""
-    return text
-
-
-def read_excel(file):
-    text = ""
-    try:
-        workbook = openpyxl.load_workbook(file)
-        for sheet in workbook:
-            for row in sheet.iter_rows(values_only=True):
-                for cell in row:
-                    if cell:
-                        text += str(cell) + " "
-    except:
-        return ""
-    return text
-
+        return "Error reading PDF"
 
 def read_word(file):
-    text = ""
     try:
         doc = Document(file)
-        for p in doc.paragraphs:
-            text += p.text + "\n"
+        return "\n".join([p.text for p in doc.paragraphs])
     except:
-        return ""
-    return text
-
+        return "Error reading Word file"
 
 def read_csv(file):
-    text = ""
     try:
-        file.seek(0)   # ⭐ VERY IMPORTANT
         df = pd.read_csv(file)
-        for _, row in df.iterrows():
-            for cell in row:
-                if cell:
-                    text += str(cell) + " "
+        return " ".join(df.astype(str).values.flatten())
     except:
-        return ""
-    return text
+        return "Error reading CSV"
 
-
-
-
-
-
+# ---------------- ANALYSIS ---------------- #
 def analyze_text_stats(text):
-    char_count = len(text.replace(" ", "").replace("\n", "").replace("\t", "").replace(".", ""))
-    word_count = len(text.split())
-    line_count = len([l for l in text.splitlines() if l.strip()])
-    sentence_count = len([s for s in text.split('.') if s.strip()])
-    return char_count, word_count, line_count, sentence_count
-
-
-
-def topic_modeling(text, num_topics=5, model_type="LDA"):
-    vectorizer = CountVectorizer(stop_words="english")
-    X = vectorizer.fit_transform([text])
-
-    if model_type == "LDA":
-        model = LatentDirichletAllocation(n_components=num_topics)
-    else:
-        model = NMF(n_components=num_topics)
-
-    model.fit(X)
-    words = vectorizer.get_feature_names_out()
-
-    topics = []
-    for idx, topic in enumerate(model.components_):
-        top_words = [words[i] for i in topic.argsort()[-10:]]
-        topics.append((f"Topic {idx+1}", ", ".join(top_words)))
-
-    return topics
-
-
+    words = text.split()
+    sentences = [s for s in text.split('.') if len(s.strip()) > 5]
+    return len(text), len(words), text.count('\n'), len(sentences)
 
 def analyze_sentiment(text):
     blob = TextBlob(text)
-    polarity = blob.sentiment.polarity
-    if polarity > 0:
-        sentiment = "Positive"
-    elif polarity < 0:
-        sentiment = "Negative"
+    score = blob.sentiment.polarity
+    if score > 0.1:
+        label = "Positive"
+    elif score < -0.1:
+        label = "Negative"
     else:
-        sentiment = "Neutral"
-    return polarity, sentiment
+        label = "Neutral"
+    return score, label
 
+def sentiment_distribution(text):
+    sentences = [s.strip() for s in text.split(".") if len(s.strip()) > 3]
+    pos = neg = neu = 0
 
+    for s in sentences:
+        score = TextBlob(s).sentiment.polarity
+        if score > 0.1:
+            pos += 1
+        elif score < -0.1:
+            neg += 1
+        else:
+            neu += 1
+
+    total = max(len(sentences), 1)
+
+    return {
+        "Positive": round(pos / total * 100, 1),
+        "Neutral": round(neu / total * 100, 1),
+        "Negative": round(neg / total * 100, 1)
+    }
+
+def topic_modeling(text, num_topics=3):
+    try:
+        vectorizer = CountVectorizer(stop_words="english", max_features=1000)
+        X = vectorizer.fit_transform([text])
+        lda = LatentDirichletAllocation(n_components=num_topics, random_state=42)
+        lda.fit(X)
+
+        words = vectorizer.get_feature_names_out()
+        topics = []
+
+        for topic in lda.components_:
+            top_indices = topic.argsort()[-5:]
+            top_words = [words[i] for i in top_indices]
+            label = top_words[-1].upper()
+            topics.append((f"Theme: {label}", ", ".join(reversed(top_words))))
+
+        return topics
+    except:
+        return [("Theme", "Not enough data")]
 
 def summarize_text(text, sentences=3):
+    if len(text.split()) < 20:
+        return text
     parser = PlaintextParser.from_string(text, Tokenizer("english"))
     summarizer = LexRankSummarizer()
     summary = summarizer(parser.document, sentences)
-    return " ".join([str(sentence) for sentence in summary])
+    return " ".join([str(s) for s in summary])
 
-
-def generate_wordcloud(processed_text):
-    wc = WordCloud(width=800, height=400).generate(processed_text)
-    fig, ax = plt.subplots(figsize=(8, 4))
+def generate_wordcloud(text):
+    wc = WordCloud(width=800, height=400, background_color="white").generate(text)
+    fig, ax = plt.subplots()
     ax.imshow(wc)
     ax.axis("off")
     return fig
-

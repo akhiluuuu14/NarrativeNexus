@@ -1,92 +1,41 @@
 import re
 import nltk
 from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
 
-nltk.download("punkt")
-nltk.download("stopwords")
-nltk.download("wordnet")
-
+nltk.download("punkt", quiet=True)
+nltk.download("stopwords", quiet=True)
+nltk.download("wordnet", quiet=True)
 
 def clean_text(text):
-    """Remove extra spaces and normalize whitespace."""
     return re.sub(r'\s+', ' ', text).strip()
 
-
 def remove_special_chars(text):
-    """Remove all characters except letters, numbers, dots, and spaces."""
     return re.sub(r'[^a-zA-Z0-9.\s]', '', text)
 
-
-def tokenize(text):
-    """Split text into tokens."""
-    return text.split()
-
-
-def remove_stopwords(tokens):
-    """Remove English stopwords."""
-    sw = set(stopwords.words("english"))
-    return [t for t in tokens if t.lower() not in sw]
-
-
-def stem_tokens(tokens):
-    """Apply Porter Stemming."""
-    stemmer = PorterStemmer()
-    return [stemmer.stem(t) for t in tokens]
-
-
-def lemmatize_tokens(tokens):
-    """Apply WordNet Lemmatization."""
-    lemmatizer = WordNetLemmatizer()
-    return [lemmatizer.lemmatize(t) for t in tokens]
-
-
-def preprocess_text(
-    text,
-    remove_space=True,
-    remove_special=True,
-    stopword_flag=True,
-    stem_flag=False,
-    lemma_flag=False,
-):
-    """
-    Full preprocessing workflow.
-    """
-
+def preprocess_text(text, remove_space=True, remove_special=True, stopword_flag=True, lemma_flag=True):
     if remove_space:
         text = clean_text(text)
     if remove_special:
         text = remove_special_chars(text)
 
-    tokens = tokenize(text)
+    tokens = word_tokenize(text.lower())
 
     if stopword_flag:
-        tokens = remove_stopwords(tokens)
-    if stem_flag:
-        tokens = stem_tokens(tokens)
+        sw = set(stopwords.words("english"))
+        tokens = [t for t in tokens if t not in sw and len(t) > 2]
+
     if lemma_flag:
-        tokens = lemmatize_tokens(tokens)
+        lemmatizer = WordNetLemmatizer()
+        tokens = [lemmatizer.lemmatize(t) for t in tokens]
 
     return " ".join(tokens)
 
-
-
-def preprocess_for_summary(text):
-    import re
-    text = re.sub(r"[^a-zA-Z0-9\s\.\,\n]", "", text)
+def preprocess_for_summary(text, use_lemma=False):
     text = re.sub(r"\s+", " ", text)
+    if use_lemma:
+        tokens = word_tokenize(text)
+        lemmatizer = WordNetLemmatizer()
+        text = " ".join(lemmatizer.lemmatize(t) for t in tokens)
     return text.strip()
-
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
-
-def preprocess_for_summary_lemmatized(text):
-    import re
-
-    text = re.sub(r"[^a-zA-Z0-9\s\.\,\n]", "", text)
-    text = re.sub(r"\s+", " ", text)
-
-    tokens = word_tokenize(text)
-    lemmatizer = WordNetLemmatizer()
-
-    return " ".join(lemmatizer.lemmatize(t) for t in tokens)
