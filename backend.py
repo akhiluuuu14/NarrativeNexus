@@ -72,23 +72,42 @@ def sentiment_distribution(text):
 
 def topic_modeling(text, num_topics=3):
     try:
-        vectorizer = CountVectorizer(stop_words="english", max_features=1000)
-        X = vectorizer.fit_transform([text])
-        lda = LatentDirichletAllocation(n_components=num_topics, random_state=42)
+        # Split the text into sentences
+        docs = [s.strip() for s in text.split(".") if len(s.strip()) > 20]
+
+        if len(docs) < 3:
+            docs = [text]
+
+        vectorizer = CountVectorizer(
+            stop_words="english",
+            max_features=1000
+        )
+
+        X = vectorizer.fit_transform(docs)
+
+        lda = LatentDirichletAllocation(
+            n_components=min(num_topics, len(docs)),
+            random_state=42
+        )
+
         lda.fit(X)
 
         words = vectorizer.get_feature_names_out()
         topics = []
 
         for topic in lda.components_:
-            top_indices = topic.argsort()[-5:]
-            top_words = [words[i] for i in top_indices]
-            label = top_words[-1].upper()
-            topics.append((f"Theme: {label}", ", ".join(reversed(top_words))))
+            top = topic.argsort()[-5:][::-1]
+            keywords = [words[i] for i in top]
+
+            topics.append((
+                f"Theme: {keywords[0].title()}",
+                ", ".join(keywords)
+            ))
 
         return topics
-    except:
-        return [("Theme", "Not enough data")]
+
+    except Exception as e:
+        return [("Theme", str(e))]
 
 def summarize_text(text, sentences=3):
     if len(text.split()) < 20:
